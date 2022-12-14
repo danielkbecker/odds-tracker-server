@@ -30,6 +30,7 @@ app.py
 Dockerfile
 Procfile
 test_content.sh
+devenv.env
 
 node_modules
 #!include:.gitignore

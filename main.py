@@ -38,7 +38,7 @@ VEGAS_INSIDER_SCHEMA = {
                 "odds": "d-flex flex-column",
             },
             "source_url": "/odds/",
-            "bookmakers": ['consensus', 'fanduel', 'playmgm', 'caesars_sportsbook', 'wynnbet', 'betrivers', 'pointsbet',
+            "bookmakers": ['fanduel', 'playmgm', 'caesars_sportsbook', 'wynnbet', 'betrivers', 'pointsbet',
                    'sports_illustrated', 'unibet'],
             "future_types": {
                 "nfl": {
