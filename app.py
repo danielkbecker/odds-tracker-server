@@ -16,6 +16,16 @@ app.config.from_object(__name__)
 # enable CORS
 CORS(app, resources={r'/*': {'origins': '*'}})
 
+aws_master_username = os.environ.get('AWS_MASTER_USERNAME')
+aws_master_pw = os.environ.get('AWS_MASTER_PW')
+aws_rdb_endpoint = os.environ.get('AWS_RDS_DB_ENDPOINT')
+aws_rdb_db_port = os.environ.get('AWS_RDS_DB_PORT')
+aws_rdb_db = os.environ.get('AWS_RDS_DB')
+
+db_url = "mysql+pymysql://" + aws_master_username + ":" + aws_master_pw + "@" + aws_rdb_endpoint + ":" + aws_rdb_db_port + "/" + aws_rdb_db
+engine = create_engine(db_url)
+
+
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
@@ -26,29 +36,35 @@ def hello():
     revision = os.environ.get('K_REVISION', 'Unknown revision')
 
     return render_template('index.html',
-        message=message,
-        Service=service,
-        Revision=revision)
+                           message=message,
+                           Service=service,
+                           Revision=revision)
+
 
 # Quick change
 # https://hevodata.com/learn/flask-mysql/
 # https://testdriven.io/blog/developing-a-single-page-app-with-flask-and-vuejs/
 # https://console.cloud.google.com/cloud-resource-manager
+@app.route('/pingpong', methods=['GET'])
+def ping_ponger():
+    return jsonify('ping pong!')
+
 
 @app.route('/ping', methods=['GET'])
 def ping_pong():
     return jsonify('pong!')
 
-@app.route('/query', methods=['GET'])
-def query():
-    AWS_MASTER_USERNAME = os.environ.get('AWS_MASTER_USERNAME')
-    AWS_MASTER_PW = os.environ.get('AWS_MASTER_PW')
-    AWS_RDS_DB_ENDPOINT = os.environ.get('AWS_RDS_DB_ENDPOINT')
-    AWS_RDS_DB= os.environ.get('AWS_RDS_DB')
-    AWS_RDS_DB_PORT= os.environ.get('AWS_RDS_DB_PORT')
 
-    db_url = "mysql+pymysql://" + AWS_MASTER_USERNAME + ":" + AWS_MASTER_PW + "@" + AWS_RDS_DB_ENDPOINT + ":" + AWS_RDS_DB_PORT + "/" + AWS_RDS_DB
-    engine = create_engine(db_url)
+@app.route('/query/tables', methods=['GET'])
+def get_list_of_tables():
+    with engine.connect() as connection:
+        sql_string = text("SHOW TABLES")
+        result = connection.execute(sql_string)
+    return jsonify({'result': [dict(row) for row in result]})
+
+
+@app.route('/query/nhl_odds', methods=['GET'])
+def query():
     with engine.connect() as connection:
         sql_string = text("SELECT * FROM nhl_odds")
         result = connection.execute(sql_string)
