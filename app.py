@@ -3,7 +3,7 @@ A sample Hello World server.
 """
 import os
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
 import pymysql
@@ -24,6 +24,12 @@ aws_rdb_db = os.environ.get('AWS_RDS_DB')
 
 db_url = "mysql+pymysql://" + aws_master_username + ":" + aws_master_pw + "@" + aws_rdb_endpoint + ":" + aws_rdb_db_port + "/" + aws_rdb_db
 engine = create_engine(db_url)
+
+
+def execute_query(query_text):
+    with engine.connect() as connection:
+        result = connection.execute(text(query_text))
+    return jsonify({'result': [dict(row) for row in result]})
 
 
 @app.route('/')
@@ -57,10 +63,12 @@ def ping_pong():
 
 @app.route('/query/tables', methods=['GET'])
 def get_list_of_tables():
-    with engine.connect() as connection:
-        sql_string = text("SHOW TABLES")
-        result = connection.execute(sql_string)
-    return jsonify({'result': [dict(row) for row in result]})
+    return execute_query("SHOW TABLES")
+
+
+@app.route('/query/table', methods=['GET', 'POST'])
+def get_table():
+    return execute_query("SELECT * FROM " + request.json['table_name'] + " LIMIT 10")
 
 
 @app.route('/query/nhl_odds', methods=['GET'])
