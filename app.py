@@ -51,32 +51,30 @@ def hello():
 # https://hevodata.com/learn/flask-mysql/
 # https://testdriven.io/blog/developing-a-single-page-app-with-flask-and-vuejs/
 # https://console.cloud.google.com/cloud-resource-manager
-@app.route('/pingpong', methods=['GET'])
-def ping_ponger():
-    return jsonify('ping pong!')
-
-
 @app.route('/ping', methods=['GET'])
 def ping_pong():
     return jsonify('pong!')
 
+# @app.route('/<String: sport>/odds/', methods=['GET', 'POST'])
+# def get_odds_for_sport(sport):
+#     query_text = "SELECT * FROM " + request.json['sport'] + "_odds LIMIT 10"
+#     return execute_query(query_text)
 
-@app.route('/query/tables', methods=['GET'])
+# @app.route('/<sport>/futures/', defaults={'sport', 'nfl'}, methods=['GET', 'POST'])
+# def get_futures_for_sport(sport):
+#     query_text = "SELECT * FROM " + request.json[sport] + "_odds LIMIT 10"
+#     return execute_query(query_text)
+#
+
+
+@app.route('/query/tables', methods=['GET', 'POST'])
 def get_list_of_tables():
     return execute_query("SHOW TABLES")
 
 
 @app.route('/query/table', methods=['GET', 'POST'])
 def get_table():
-    return execute_query("SELECT * FROM " + request.json['table_name'] + " LIMIT 10")
-
-
-@app.route('/query/nhl_odds', methods=['GET'])
-def query():
-    with engine.connect() as connection:
-        sql_string = text("SELECT * FROM nhl_odds")
-        result = connection.execute(sql_string)
-    return jsonify({'result': [dict(row) for row in result]})
+    return execute_query("SELECT * FROM " + request.json['table_name'] + '_odds' + " LIMIT 1")
 
 
 if __name__ == '__main__':
