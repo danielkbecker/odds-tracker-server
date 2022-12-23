@@ -23,8 +23,9 @@ VEGAS_INSIDER_SCHEMA = {
     "base_url": "http://vegasinsider.com/",
     "table_types": {
         "odds": {
-            "bookmakers": ['open', 'consensus', 'fanduel', 'playmgm', 'caesars_sportsbook', 'wynnbet', 'betrivers', 'pointsbet',
-                   'sports_illustrated', 'unibet'],
+            "bookmakers": ['open', 'consensus', 'fanduel', 'playmgm', 'caesars_sportsbook', 'wynnbet', 'betrivers',
+                           'pointsbet',
+                           'sports_illustrated', 'unibet'],
             "source_url": "/odds/las-vegas",
             "odds_css_classes": "d-flex flex-row hide-scrollbar odds-slider-all syncscroll tracks",
             "matchup_info_css_classes": "d-flex events flex-column position-sticky track",
@@ -39,38 +40,50 @@ VEGAS_INSIDER_SCHEMA = {
             },
             "source_url": "/odds/",
             "bookmakers": ['fanduel', 'playmgm', 'caesars_sportsbook', 'wynnbet', 'betrivers', 'pointsbet',
-                   'sports_illustrated', 'unibet'],
+                           'sports_illustrated', 'unibet'],
             "future_types": {
                 "nfl": {
                     "team_odds": {
-                        "types": ["super_bowl","afc_champ","nfc_champ","afc_east","afc_south","afc_north","afc_west","nfc_east","nfc_south","nfc_north","nfc_west"],
-                        "urls": ["futures","afc-championship", "nfc-championship","afc-east","afc-south","afc-north","afc-west","nfc-east","nfc-south","nfc-north","nfc-west"]
-                        },
+                        "types": ["super_bowl", "afc_champ", "nfc_champ", "afc_east", "afc_south", "afc_north",
+                                  "afc_west", "nfc_east", "nfc_south", "nfc_north", "nfc_west"],
+                        "urls": ["futures", "afc-championship", "nfc-championship", "afc-east", "afc-south",
+                                 "afc-north", "afc-west", "nfc-east", "nfc-south", "nfc-north", "nfc-west"]
+                    },
                     "player_odds": {
-                        "types": ["mvp","rookie","passing_yards","receiving_yards","rushing_yards","passing_touchdowns","receiving_touchdowns"],
-                        "urls": ["mvp", "rookie-of-the-year","most-passing-yards","most-receiving-yards","most-rushing-yards","most-passing-touchdowns","most-receiving-touchdowns"]
-                     }
+                        "types": ["mvp", "rookie", "passing_yards", "receiving_yards", "rushing_yards",
+                                  "passing_touchdowns", "receiving_touchdowns"],
+                        "urls": ["mvp", "rookie-of-the-year", "most-passing-yards", "most-receiving-yards",
+                                 "most-rushing-yards", "most-passing-touchdowns", "most-receiving-touchdowns"]
+                    }
                 },
                 "nba": {
                     "team_odds": {
                         # Careful about picking the first grid on each page
-                        "types": ["nba_champ","eastern_conference","western_conference","atlantic_division","central_division","northwest_division","pacific_division","southeast_division","southwest_division"],
-                        "urls": ["futures","eastern-conference","western-conference","atlantic-division","central-division","northwest-division","pacific-division","southeast-division","southwest-division"]
+                        "types": ["nba_champ", "eastern_conference", "western_conference", "atlantic_division",
+                                  "central_division", "northwest_division", "pacific_division", "southeast_division",
+                                  "southwest_division"],
+                        "urls": ["futures", "eastern-conference", "western-conference", "atlantic-division",
+                                 "central-division", "northwest-division", "pacific-division", "southeast-division",
+                                 "southwest-division"]
                     },
                     "player_odds": {
-                        "types": ["mvp", "roy","dpoy","mip","sixth_man"],
-                        "urls": ["mvp","rookie-of-the-year","defensive-player-of-the-year","most-improved","sixth-man"]
+                        "types": ["mvp", "roy", "dpoy", "mip", "sixth_man"],
+                        "urls": ["mvp", "rookie-of-the-year", "defensive-player-of-the-year", "most-improved",
+                                 "sixth-man"]
                     }
                 },
                 "nhl": {
                     "team_odds": {
-                        "types": ["stanley_cup","eastern_conference","western_conference","atlantic_divsion","metropolitan_division","pacific_division","central_division"],
-                        "urls": ["futures","eastern-conference","western-conference","atlantic-division","metropolitan-division","pacific-division","central-division"]
+                        "types": ["stanley_cup", "eastern_conference", "western_conference", "atlantic_divsion",
+                                  "metropolitan_division", "pacific_division", "central_division"],
+                        "urls": ["futures", "eastern-conference", "western-conference", "atlantic-division",
+                                 "metropolitan-division", "pacific-division", "central-division"]
                     },
                     "player_odds": {
                         # NHL needs its own thing because its not in a table
-                        "types": ["hart_award","vezina_award","rocket_richard","calder","james_norries","jack_adams"],
-                        "urls": ["","","","","",""]
+                        "types": ["hart_award", "vezina_award", "rocket_richard", "calder", "james_norries",
+                                  "jack_adams"],
+                        "urls": ["", "", "", "", "", ""]
                     }
                 },
                 "college-football": {
@@ -141,6 +154,9 @@ VEGAS_INSIDER_SCHEMA = {
 }
 
 
+# 'GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, PROCESS, REFERENCES, INDEX, ALTER, SHOW DATABASES,
+# CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, CREATE VIEW, SHOW VIEW,
+# CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER ON *.* TO `admin`@`%` WITH GRANT OPTION'
 # Should Import this from external file ****
 def save_data(sport, dataframe, temp_table_name, table_name):
     db_url = "mysql+pymysql://" + AWS_USERNAME + ":" + AWS_PASSWORD + "@" + AWS_DB_ENDPOINT + ":" + AWS_DB_PORT + "/" + AWS_RDS_DB
@@ -151,12 +167,18 @@ def save_data(sport, dataframe, temp_table_name, table_name):
                 frame = dataframe.to_sql(table_name, connection, index=False)
             except ValueError as vx:
                 # Table exists
-                print(vx)
                 temp_frame = dataframe.to_sql(temp_table_name, connection, if_exists='replace')
+                # This will break if the table does not exist
+                before_rows_query = "SELECT COUNT(*) FROM " + table_name
+                before_rows = connection.execute(before_rows_query).fetchone()[0]
                 sql_string = "INSERT INTO " + table_name + " (" + ", ".join(
                     dataframe.columns.tolist()) + ") " + "SELECT " + ", ".join(
                     dataframe.columns.tolist()) + " FROM " + temp_table_name + " WHERE (" + "hash" + ") NOT IN (SELECT " + "hash" + " FROM " + table_name + ")"
                 connection.execute(sql_string)
+                after_rows_query = "SELECT COUNT(*) FROM " + table_name
+                after_rows = connection.execute(after_rows_query).fetchone()[0]
+                print(vx)
+                print(str(int(after_rows) - int(before_rows)) + ' new rows added to ' + table_name)
             except Exception as ex:
                 print(ex)
             else:
@@ -211,11 +233,11 @@ class VegasInsiderScraper:
                 year_of_game = self.now_timestamp.year + 1
 
             if len(day.split(' ')) == 2:
-                month_and_day = datetime.datetime.strptime(day,"%b %d")
+                month_and_day = datetime.datetime.strptime(day, "%b %d")
                 date = datetime.datetime(year_of_game, month_and_day.month, month_and_day.day, 20, 30)
             else:
                 date_without_tz = day[slice(0, -3)] + " " + str(year_of_game)
-                date = datetime.datetime.strptime(date_without_tz,"%b %d %I:%M %p %Y")
+                date = datetime.datetime.strptime(date_without_tz, "%b %d %I:%M %p %Y")
         else:
             today_day_of_wk = self.now_timestamp.isoweekday()
             # For some reason it thinks %A is nov ?
@@ -242,6 +264,7 @@ class VegasInsiderScraper:
             col_combined = ''.join(col_data).encode()
             hashed_col = hashlib.sha256(col_combined).hexdigest()
             return hashed_col
+
         new_df[name] = new_df.apply(lambda row: func(row, columns), axis=1)
         return new_df
 
@@ -266,7 +289,8 @@ class VegasInsiderScraper:
 
         for bet_type_index, bet_type in enumerate(bet_types, start=1):
             for home_away_index, home_or_away in enumerate(away_home_order, start=1):
-                for bookmaker_index, bookmaker in enumerate(VEGAS_INSIDER_SCHEMA["table_types"]["odds"]["bookmakers"], start=1):
+                for bookmaker_index, bookmaker in enumerate(VEGAS_INSIDER_SCHEMA["table_types"]["odds"]["bookmakers"],
+                                                            start=1):
                     odd_col_name = bet_type + '_' + home_or_away + '_' + bookmaker + '_' + "odds"
                     cost_col_name = bet_type + '_' + home_or_away + '_' + bookmaker + '_' + "cost"
                     # If it is a moneyline bet there is only 1 value in the cell.
@@ -355,7 +379,9 @@ class VegasInsiderScraper:
                 future_cols = grid_html.find_all("div", class_="d-flex flex-column")
                 temp_team_odds = pd.DataFrame()
                 for future_col in future_cols:
-                    odds_boxes = future_col.find_all("div", class_=["m-1 odds-box","m-1 odds-box position-relative","best-odds-box m-1 odds-box position-relative","best-odds-box m-1 odds-box"])
+                    odds_boxes = future_col.find_all("div", class_=["m-1 odds-box", "m-1 odds-box position-relative",
+                                                                    "best-odds-box m-1 odds-box position-relative",
+                                                                    "best-odds-box m-1 odds-box"])
                     odds_col_list = []
                     for odds_box in odds_boxes:
                         in_box = odds_box.getText(",", strip=True).replace(',Bet Now', '')
@@ -394,7 +420,8 @@ def scraper_cloud_function(event, context):
     for sport in VEGAS_INSIDER_SCHEMA["sports"].keys():
         odds_dataframe = VegasInsiderScraper(sport).get_odds()
         if not odds_dataframe.empty:
-            save_data(sport, odds_dataframe, VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_temp_odds"], VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_odds"])
+            save_data(sport, odds_dataframe, VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_temp_odds"],
+                      VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_odds"])
     for sport in VEGAS_INSIDER_SCHEMA["sports"].keys():
         team_futures_dataframe = VegasInsiderScraper(sport).get_team_futures()
         if not team_futures_dataframe.empty:
