@@ -9,6 +9,8 @@ from pytz import timezone
 import time
 from sqlalchemy import create_engine
 import pymysql
+import boto3
+from io import StringIO
 
 # ** Gcloud deploy command **
 
@@ -18,6 +20,10 @@ AWS_PASSWORD = os.environ["AWS_MASTER_PW"]
 AWS_DB_ENDPOINT = os.environ["AWS_RDS_DB_ENDPOINT"]
 AWS_RDS_DB = os.environ["AWS_RDS_DB"]
 AWS_DB_PORT = os.environ["AWS_RDS_DB_PORT"]
+AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
+AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
+AWS_S3_BUCKET_ENDPOINT = os.environ["AWS_S3_BUCKET_ENDPOINT"]
+
 TIMEZONE = timezone('EST')
 VEGAS_INSIDER_SCHEMA = {
     "base_url": "http://vegasinsider.com/",
@@ -154,6 +160,12 @@ VEGAS_INSIDER_SCHEMA = {
 }
 
 
+# Imports
+# Rounds the odds to the lowest hour/min where is a multiple of x. I'm using 15 min in this script.
+def round_down(num, divisor):
+    return num - (num % divisor)
+
+
 # 'GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, PROCESS, REFERENCES, INDEX, ALTER, SHOW DATABASES,
 # CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, CREATE VIEW, SHOW VIEW,
 # CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER ON *.* TO `admin`@`%` WITH GRANT OPTION'
@@ -184,6 +196,25 @@ def save_data(sport, dataframe, temp_table_name, table_name):
             else:
                 print(f"{table_name} created successfully.")
     print("Finished")
+
+
+# Function saves a pandas dataframe to a s3 bucket.
+def save_to_s3(dataframe, timestamp, sport, bet_type):
+    bucket = 'oddstracker'
+    # Need the date and time rounded down to the nearest 15 min interval here
+    month = str(timestamp.month)
+    day = str(timestamp.day)
+    hour = str(timestamp.hour)
+    minute = timestamp.minute
+    # Not sure whether to store by bet_type or day first.
+    filename = 'scraped_data' + '/' + sport + '/' + bet_type + '/' + month + '/' + day + '/' + hour + ':' \
+               + str(round_down(minute, 15)) + '.csv'
+
+    print(filename)
+    csv_buffer = StringIO()
+    odds_dataframe = dataframe.to_csv(csv_buffer, index=False)
+    s3csv = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    response = s3csv.put_object(Body=csv_buffer.getvalue(), Bucket=bucket, Key=filename)
 
 
 class VegasInsiderScraper:
@@ -408,23 +439,47 @@ class VegasInsiderScraper:
         player_odds = VEGAS_INSIDER_SCHEMA["table_types"]["futures"]["future_types"][self.sport]["player_odds"]
         pass
 
-    def get_matchups(self):
-        pass
-
-    def get_schedules(self):
-        pass
+    # def get_matchups(self):
+    #     pass
+    #
+    # def get_schedules(self):
+    #     pass
+    def return_timestamp(self):
+        return self.now_timestamp
 
 
 # This is entry point for gcloud functions.
 def scraper_cloud_function(event, context):
     for sport in VEGAS_INSIDER_SCHEMA["sports"].keys():
+        # Get odds
         odds_dataframe = VegasInsiderScraper(sport).get_odds()
         if not odds_dataframe.empty:
             save_data(sport, odds_dataframe, VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_temp_odds"],
                       VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_odds"])
+            local_ts = VegasInsiderScraper(sport).return_timestamp()
+            save_to_s3(odds_dataframe, local_ts, sport, 'odds')
+        # Get futures
     for sport in VEGAS_INSIDER_SCHEMA["sports"].keys():
         team_futures_dataframe = VegasInsiderScraper(sport).get_team_futures()
         if not team_futures_dataframe.empty:
             save_data(sport, team_futures_dataframe,
                       VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_temp_team_futures"],
                       VEGAS_INSIDER_SCHEMA["sports"][sport]["table_names"]["prod_team_futures"])
+            local_ts = VegasInsiderScraper(sport).return_timestamp()
+            save_to_s3(team_futures_dataframe, local_ts, sport, 'futures')
+
+# https://nzenitram.medium.com/medium-lambda-and-me-or-how-i-export-medium-stories-to-my-website-148b599ad271
+# https://stackoverflow.com/questions/58345773/how-to-save-my-scraped-data-in-aws-s3-bucket
+# https://boto3.amazonaws.com/v1/documentation/api/latest/guide/paginators.html
+# https://stackoverflow.com/questions/30249069/listing-contents-of-a-bucket-with-boto3
+# https://stackoverflow.com/questions/66059356/list-all-objects-in-aws-s3-bucket-with-their-storage-class-using-boto3-python/66072127#66072127
+# def s3_lister():
+#     s3_resource = boto3.resource('s3')
+#     bucket = s3_resource.Bucket('oddstracker')
+#     for obj in bucket.objects.all():
+#         print(obj.key)
+
+
+# odds_scrape = VegasInsiderScraper('nfl').get_odds()
+# ts = datetime.datetime.now(TIMEZONE)
+# save_to_s3(odds_scrape, ts, 'nfl', 'odds')
