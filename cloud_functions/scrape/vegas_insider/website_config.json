@@ -1,0 +1,239 @@
+{
+  "vegas_insider": {
+    "base_url": "https://vegasinsider.com",
+    "sports": {
+      "nfl": {
+        "sport_key": "nfl",
+        "sport_label": "NFL",
+        "bet_order": [
+          "line",
+          "overunder",
+          "moneyline"
+        ],
+        "tables": {
+          "team_futures": {
+            "subtypes": []
+          },
+          "player_futures": {
+            "subtypes": [],
+            "types": [],
+            "urls": [
+              "mvp",
+              "rookie-of-the-year",
+              "most-passing-yards",
+              "most-receiving-yards",
+              "most-rushing-yards",
+              "most-passing-touchdowns",
+              "most-receiving-touchdowns"
+            ]
+          },
+          "odds": {
+            "subtypes": [
+              {
+                "game_odds": {
+                  "url": ""
+                }
+              }
+            ]
+          }
+        }
+      },
+      "nba": {
+        "sport_key": "nba",
+        "sport_label": "NBA",
+        "bet_order": [
+          "line",
+          "overunder",
+          "moneyline"
+        ],
+        "tables": {
+          "team_futures": {
+            "subtypes": [
+              {
+                "nba_champ": {
+                  "url": "futures"
+                }
+              },
+              {
+                "eastern_conference": {
+                  "url": "eastern-conference"
+                }
+              },
+              {
+                "western_conference": {
+                  "url": "western-conference"
+                }
+              },
+              {
+                "atlantic_division": {
+                  "url": "atlantic-division"
+                }
+              },
+              {
+                "central_division": {
+                  "url": "central-division"
+                }
+              },
+              {
+                "northwest_division": {
+                  "url": "northwest-division"
+                }
+              },
+              {
+                "pacific_division": {
+                  "url": "pacific-division"
+                }
+              },
+              {
+                "southeast_division": {
+                  "url": "southeast-division"
+                }
+              },
+              {
+                "southwest_division": {
+                  "url": "southwest-division"
+                }
+              }
+            ]
+          },
+          "player_futures": {
+            "subtypes": []
+          },
+          "odds": {
+            "subtypes": [
+              {
+                "game_odds": {
+                  "url": ""
+                }
+              }
+            ]
+          }
+        }
+      },
+      "nhl": {
+        "sport_key": "nhl",
+        "sport_label": "NHL",
+        "bet_order": [
+          "moneyline",
+          "overunder",
+          "puckline"
+        ],
+        "tables": {
+          "team_futures": {
+            "subtypes": [
+              {
+                "stanley_cup": {
+                  "url": "futures"
+                }
+              },
+              {
+                "eastern_conference": {
+                  "url": "eastern-conference"
+                }
+              },
+              {
+                "western_conference": {
+                  "url": "western-conference"
+                }
+              },
+              {
+                "atlantic_divsion": {
+                  "url": "atlantic-division"
+                }
+              },
+              {
+                "metropolitan_division": {
+                  "url": "metropolitan-division"
+                }
+              },
+              {
+                "pacific_division": {
+                  "url": "pacific-division"
+                }
+              },
+              {
+                "central_division": {
+                  "url": "central-division"
+                }
+              }
+            ]
+          },
+          "odds": {
+            "subtypes": [
+              {
+                "game_odds": {
+                  "url": ""
+                }
+              }
+            ]
+          },
+          "player_futures": {
+            "subtypes": []
+          }
+        },
+        "college-football": {
+          "sport_key": "college-football",
+          "sport_label": "NCAAF",
+          "bet_order": [
+            "line",
+            "overunder",
+            "moneyline"
+          ],
+          "tables": {
+            "odds": {
+              "subtypes": [
+                {
+                  "game_odds": {
+                    "url": ""
+                  }
+                }
+              ]
+            },
+            "player_futures": {
+              "subtypes": []
+            },
+            "team_futures": {
+              "subtypes": []
+            }
+          }
+        }
+      }
+    },
+    "tables": {
+      "odds": {
+        "css": {
+          "container": "bc-odds-comparison-full bc-odds-table bc-table",
+          "teams": "d-flex flex-column position-relative",
+          "bookmakers": {
+             "outer": "d-flex flex-row my-auto pr-2 pr-lg-0 px-1",
+             "inner": "bookmaker-rotated position-absolute"
+          },
+          "cells": "m1 odds-box",
+          "matchups": "d-flex flex-row hide-scrollbar odds-slider-all syncscroll tracks",
+          "matchup_info": "d-flex events flex-column position-sticky track",
+          "row_classes": "d-flex flex-row pr-2 pr-lg-0 px-1",
+          "odds_box": "odds-box"
+        },
+        "source_url": "/odds/las-vegas"
+      },
+      "team_futures": {
+        "css": {
+          "container": "bc-odds-table bc-table futures-container",
+          "teams": "d-flex flex-column position-relative",
+          "bookmakers": {
+             "outer": "bg-white d-flex fixed-odds-header-transition flex-row hide-scrollbar odds-comparison-border odds-slider-all overflow-auto stick-to-top syncscroll tracks z-index-301 fixed-odds-header",
+             "inner": "bookmaker-rotated position-absolute"
+          },
+          "cells": "m1 odds-box"
+        },
+        "source_url": "/odds/"
+      },
+      "player_futures": {
+        "css": {},
+        "source_url": "/odds/"
+      }
+    },
+    "bookmakers": [
+    ]
+  }
+}

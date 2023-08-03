@@ -7,30 +7,20 @@
 #   $ gcloud topic gcloudignore
 #
 .gcloudignore
-# If you would like to upload your .git directory, .gitignore file or files
-# from your .gitignore file, remove the corresponding line
-# below:
-.git
-.gitignore
-pytest.ini
-venv
-tests
-.idea
-.pytest_cache
-README.md
-*.pyc
 .kpt-pipeline
+.pytest_cache
 .readmes
 .vscode
 img
 static
 templates
+tests
 .dockerignore
+.gitignore
 app.py
-Dockerfile
-Procfile
-test_content.sh
 devenv.env
-
-node_modules
-#!include:.gitignore
+Dockerfile
+pytest.ini
+README.md
+test_content.sh
+venv

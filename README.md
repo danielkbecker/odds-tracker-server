@@ -29,7 +29,7 @@ Set up your S3 bucket if you don't have one. Set up a MySQL Database if you don'
 This project uses an AWS RDS MySQL free tier database, but any database host will work.
 
 MYSQL_USERNAME=admin
-MYSQL_PW=master-pass
+MYSQL_PW= ***** HIDING FOR LENNAR *****
 MYSQL_HOST=database-1.abcd.us-east-1.rds.amazonaws.com
 MYSQL_DB_NAME = sportsoddsdb
 MYSQL_DB_PORT = 3306
@@ -39,6 +39,9 @@ S3_BUCKET_ENDPOINT = https://PROJECTNAME.s3.amazonaws.com/FOLDER/
 
 To deploy the scraper through Goo
 Deploy: gcloud functions deploy scrape_vegas_insider --timeout=540
+
+Config: 
+
 
 ## 
 Run testing: pytest

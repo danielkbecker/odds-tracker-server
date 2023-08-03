@@ -4,13 +4,9 @@ import boto3
 from io import StringIO
 
 
-# ***** MATH HELPERS *****
-# Rounds the odds to the lowest hour/min where is a multiple of x. I'm using 15 minute scraper intervals in this script.
-# Example Inputs/Outputs:
-#    1. num = 5, x = 15 returns 0
-#    2. num = 16, x = 15 returns 15
-#    3. num = 15, x = 15 returns 15
-#    4. num = 0, x = 15 returns 0
+# ***** MATH HELPERS ***** Rounds the odds to the lowest hour/min where is a multiple of x. I'm using 15 minute
+# scraper.py intervals in this script. Example Inputs/Outputs: 1. num = 5, x = 15 returns 0 2. num = 16,
+# x = 15 returns 15 3. num = 15, x = 15 returns 15 4. num = 0, x = 15 returns 0
 def round_down(num, divisor):
     return num - (num % divisor)
 
@@ -39,17 +35,15 @@ def sha_256_hash(passed_df, columns, name="hash"):
     return new_df
 
 
-# ***** Database HELPERS *****
-# Save any rows data to a MySQL database.
-def save_diff_to_mysql(username, password, db_endpoint, db_port, db_name, dataframe, temp_name, target_table_name):
-    db_url = "mysql+pymysql://" + username + ":" + password + "@" + db_endpoint + ":" + db_port + "/" + db_name
-    engine = create_engine(db_url)
+def save_routine(engine, dataframe, temp_name, target_table_name):
     total_rowcount = 0
     with engine.connect() as connection:
         if not dataframe.empty:
             try:
                 # frame = dataframe before change
-                dataframe.to_sql(target_table_name, connection, index=False)
+                table = dataframe.to_sql(target_table_name, connection, index=False)
+                total_rowcount += len(table)
+                print(f"Table {target_table_name} created successfully. {str(table)} rows added.")
             except ValueError:
                 # The table already exists, so we need to append only new data to the existing table.
                 # temp_frame = dataframe before change
@@ -63,15 +57,24 @@ def save_diff_to_mysql(username, password, db_endpoint, db_port, db_name, datafr
                                                   " WHERE (" + "hash" + ")" \
                                                   " NOT IN (SELECT " + "hash" + " FROM " + target_table_name + ")"
                 diff = connection.execute(sql_string)
-                # after_rows_query = "SELECT COUNT(*) FROM " + target_table_name
-                # after_rows = connection.execute(after_rows_query).fetchone()[0]
                 print(str(diff.rowcount) + ' row(s) added to ' + target_table_name)
                 total_rowcount += diff.rowcount
-            except Exception as ex:
-                print(ex)
-            else:
-                print(f"New table {target_table_name} created successfully.")
+    total_rowcount = 0
     return total_rowcount
+
+
+# ***** Database HELPERS *****
+# Save any rows data to a MySQL database.
+def save_diff_to_mysql(username, password, db_endpoint, db_port, db_name, dataframe, temp_name, target_table_name):
+    db_url = "mysql+pymysql://" + username + ":" + password + "@" + db_endpoint + ":" + db_port + "/" + db_name
+    engine = create_engine(db_url)
+    save_routine(engine, dataframe, temp_name, target_table_name)
+
+
+def save_diff_to_postgres(username, password, db_endpoint, db_port, db_name, dataframe, temp_name, target_table_name):
+    postgres_db_string = f"postgresql+psycopg2://{username}:{password}@{db_endpoint}/{db_name}"
+    engine = create_engine(postgres_db_string)
+    save_routine(engine, dataframe, temp_name, target_table_name)
 
 
 # Function saves a pandas dataframe to a s3 bucket.
